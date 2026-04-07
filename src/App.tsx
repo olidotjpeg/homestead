@@ -2,50 +2,34 @@ import { useState, useEffect, useCallback } from "react";
 import type { Task, MicroDone, MoodValue, Mood } from "@/types";
 import { PLANTS } from "@/constants/plants";
 import { MOODS } from "@/constants/moods";
-import { WATER_GOAL, STORAGE_KEY_APIKEY, DEV_SKIP_KEY } from "@/constants/config";
+import { WATER_GOAL } from "@/constants/config";
+// import { STORAGE_KEY_APIKEY, DEV_SKIP_KEY } from "@/constants/config"; // re-enable with Clover
 import { MICRO_STEPS } from "@/constants/microSteps";
 import { P, serif, sans } from "@/constants/theme";
 import { loadState, saveState, freshTasks, freshMicro } from "@/lib/persistence";
-import { useClover } from "@/hooks/useClover";
+// import { useClover } from "@/hooks/useClover"; // re-enable with Clover
 
 import { GardenScene }   from "@/components/GardenScene";
 import { WaterTracker }  from "@/components/WaterTracker";
 import { TaskRow }       from "@/components/TaskRow";
 import { MoodPicker }    from "@/components/MoodPicker";
-import { CloverChat }    from "@/components/CloverChat";
+// import { CloverChat }    from "@/components/CloverChat"; // re-enable with Clover
 import { NewDayBanner }  from "@/components/NewDayBanner";
-import { ApiKeyScreen }  from "@/components/ApiKeyScreen";
+// import { ApiKeyScreen }  from "@/components/ApiKeyScreen";
 import { RandomPicker }  from "@/components/RandomPicker";
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-const getApiKey = (): string => {
-  try { return localStorage.getItem(STORAGE_KEY_APIKEY) ?? ""; } catch { return ""; }
-};
-
-const setApiKey = (key: string): void => {
-  try { localStorage.setItem(STORAGE_KEY_APIKEY, key); } catch {}
-};
-
-const removeApiKey = (): void => {
-  try { localStorage.removeItem(STORAGE_KEY_APIKEY); } catch {}
-};
+// ─── Helpers (disabled with Clover) ───────────────────────────────────────────
+// const getApiKey = (): string => { try { return localStorage.getItem(STORAGE_KEY_APIKEY) ?? ""; } catch { return ""; } };
+// const setApiKey = (key: string): void => { try { localStorage.setItem(STORAGE_KEY_APIKEY, key); } catch {} };
+// const removeApiKey = (): void => { try { localStorage.removeItem(STORAGE_KEY_APIKEY); } catch {} };
 
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 export default function App() {
-  // ── API key ──
-  const [apiKey, setApiKeyState] = useState<string>(() => getApiKey());
-
-  const handleSaveKey = (key: string) => {
-    setApiKey(key);
-    setApiKeyState(key);
-  };
-
-  const handleClearKey = () => {
-    removeApiKey();
-    setApiKeyState("");
-  };
+  // ── API key (disabled for now) ──
+  // const [apiKey, setApiKeyState] = useState<string>(() => getApiKey());
+  // const handleSaveKey = (key: string) => { setApiKey(key); setApiKeyState(key); };
+  // const handleClearKey = () => { removeApiKey(); setApiKeyState(""); };
 
   // ── Restore from localStorage (or start fresh) ──
   const saved = loadState();
@@ -66,14 +50,8 @@ export default function App() {
   const [showList, setShowList] = useState(true);
   const [expanded, setExpanded] = useState<number | null>(null);
 
-  // ── Clover chat ──
-  const { messages, thinking, input, setInput, send } = useClover({
-    apiKey,
-    tasks,
-    water,
-    mood,
-    lowSpoon,
-  });
+  // ── Clover chat (disabled for now) ──
+  // const { messages, thinking, input, setInput, send } = useClover({ apiKey, tasks, water, mood, lowSpoon });
 
   // ── Persist on every relevant change ──
   useEffect(() => {
@@ -110,20 +88,20 @@ export default function App() {
   }, []);
 
   // ── Mood ──
-  const cloverEnabled = apiKey !== DEV_SKIP_KEY;
+  // const cloverEnabled = apiKey !== DEV_SKIP_KEY; // re-enable with Clover
 
   const pickMood = (m: Mood) => {
     setMood(m.value as MoodValue);
     if (m.value === "struggling") setLowSpoon(true);
-    if (cloverEnabled) send(`My mood today is: ${m.label} ${m.emoji}`);
+    // if (cloverEnabled) send(`My mood today is: ${m.label} ${m.emoji}`); // re-enable with Clover
   };
 
   const moodObj = MOODS.find((m) => m.value === mood);
   const done    = tasks.filter((t) => t.done).length;
   const shown   = lowSpoon ? tasks.slice(0, 3) : tasks;
 
-  // ── Gate: API key screen ──
-  if (!apiKey) return <ApiKeyScreen onSave={handleSaveKey} />;
+  // ── Gate: API key screen (disabled for now — uncomment to re-enable) ──
+  // if (!apiKey) return <ApiKeyScreen onSave={handleSaveKey} />;
 
   return (
     <div style={{ minHeight: "100vh", background: P.pageBg, fontFamily: sans }}>
@@ -144,7 +122,7 @@ export default function App() {
             {["🌸","🌿","🌸","🌿","🌸"].map((e, i) => <span key={i} style={{ fontSize: "12px" }}>{e}</span>)}
           </div>
           <button
-            onClick={handleClearKey}
+            onClick={() => {}} /* onClick={handleClearKey} — re-enable with Clover */
             style={{ marginTop: "6px", background: "none", border: "none", cursor: "pointer", fontFamily: sans, fontSize: "10px", color: P.bark3, opacity: .5 }}
           >
             change api key
@@ -212,7 +190,7 @@ export default function App() {
                 }} />
               </div>
               <button
-                onClick={() => { setLowSpoon((s) => !s); if (!lowSpoon) send("I'm feeling overwhelmed today."); }}
+                onClick={() => { setLowSpoon((s) => !s); /* if (!lowSpoon) send("I'm feeling overwhelmed today."); */ }}
                 style={{
                   padding: "5px 12px", borderRadius: "14px",
                   border: `1px dashed ${lowSpoon ? "rgba(122,170,120,.6)" : "rgba(232,160,176,.45)"}`,
@@ -286,8 +264,8 @@ export default function App() {
         {/* ── Random picker ── */}
         {mood && <RandomPicker />}
 
-        {/* ── Clover chat ── */}
-        {mood && cloverEnabled && (
+        {/* ── Clover chat (disabled for now) ── */}
+        {/* {mood && cloverEnabled && (
           <CloverChat
             messages={messages}
             input={input}
@@ -295,7 +273,7 @@ export default function App() {
             onSend={send}
             thinking={thinking}
           />
-        )}
+        )} */}
 
         {/* ── Footer ── */}
         <div style={{
